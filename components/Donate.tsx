@@ -10,19 +10,19 @@ const partitions = [
     id: 1,
     title: "Orphanage Support",
     description: "Help provide food, shelter, and education to orphans.",
-    image: "/partitions/orphanage.jpg",
+    image: "/projects/orphan.png",
   },
   {
     id: 2,
     title: "Animal Shelter",
     description: "Support rescue operations and shelter for abandoned animals.",
-    image: "/partitions/animals.jpg",
+    image: "/projects/animals.png",
   },
   {
     id: 3,
     title: "Clean Water Project",
     description: "Fund wells and clean water systems in developing countries.",
-    image: "/partitions/water.jpg",
+    image: "/projects/water.png",
   },
 ];
 
