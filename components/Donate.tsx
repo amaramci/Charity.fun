@@ -1,5 +1,7 @@
 import { FC, useState } from "react";
 import styles from "../styles/Home.module.css";
+import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { Transaction, SystemProgram, PublicKey } from "@solana/web3.js";
 
 interface DonateProps {
   onBack: () => void;
@@ -27,6 +29,9 @@ const partitions = [
 ];
 
 const Donate: FC<DonateProps> = ({ onBack }) => {
+  const { publicKey, sendTransaction } = useWallet();
+  const { connection } = useConnection();
+
   const [mode, setMode] = useState<'select-partition' | 'fill-donation'>('select-partition');
   const [selectedPartition, setSelectedPartition] = useState<number | null>(null);
   const [amount, setAmount] = useState("");
@@ -42,6 +47,25 @@ const Donate: FC<DonateProps> = ({ onBack }) => {
       setAmount("");
     } else {
       onBack();
+    }
+  };
+
+  const handleDonate = async () => {
+    if (!publicKey) return alert("Connect wallet first!");
+    try {
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: publicKey, // Placeholder: Ideally this would be a project account
+          lamports: 1000, // Dummy amount
+        })
+      );
+      const signature = await sendTransaction(transaction, connection);
+      await connection.confirmTransaction(signature, "processed");
+      alert("Donation Created and Transaction Signed!");
+    } catch (error) {
+      console.error("Transaction failed", error);
+      alert("Transaction failed!");
     }
   };
 
@@ -73,12 +97,14 @@ const Donate: FC<DonateProps> = ({ onBack }) => {
           <p className={styles.subtitle}>{partitions.find(p => p.id === selectedPartition)?.description}</p>
           <input
             className={styles.input}
-            placeholder="Enter amount to donate"
+            placeholder="SOL"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
           />
-          <button className={styles.primaryButton}>Donate Now</button>
-        </>
+          <button className={styles.primaryButton} onClick={handleDonate}>
+            Donate
+          </button>
+          </>
       )}
     </div>
   );
