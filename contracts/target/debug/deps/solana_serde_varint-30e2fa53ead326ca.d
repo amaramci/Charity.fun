@@ -1,0 +1,5 @@
+/Users/amar/Desktop/Charity.fun/contracts/target/debug/deps/libsolana_serde_varint-30e2fa53ead326ca.rmeta: /Users/amar/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-serde-varint-2.2.2/src/lib.rs
+
+/Users/amar/Desktop/Charity.fun/contracts/target/debug/deps/solana_serde_varint-30e2fa53ead326ca.d: /Users/amar/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-serde-varint-2.2.2/src/lib.rs
+
+/Users/amar/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/solana-serde-varint-2.2.2/src/lib.rs:
