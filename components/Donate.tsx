@@ -1,7 +1,11 @@
 import { FC, useState } from "react";
 import styles from "../styles/Home.module.css";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
-import { Transaction, SystemProgram, PublicKey } from "@solana/web3.js";
+import {
+  Transaction,
+  PublicKey,
+  TransactionInstruction,
+} from "@solana/web3.js";
 
 interface DonateProps {
   onBack: () => void;
@@ -52,20 +56,40 @@ const Donate: FC<DonateProps> = ({ onBack }) => {
 
   const handleDonate = async () => {
     if (!publicKey) return alert("Connect wallet first!");
+    if (!amount || isNaN(Number(amount))) return alert("Enter a valid amount");
+
     try {
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: publicKey, // Placeholder: Ideally this would be a project account
-          lamports: 1000, // Dummy amount
-        })
-      );
+      const programId = new PublicKey("7wUQXRQtBzTmyp9kcrmok9FKcc4RSYXxPYN9FGDLnqxb");
+
+      const recipient = publicKey; // TODO: Replace with real recipient if needed
+      const lamports = Math.floor(Number(amount) * 1e9); // Convert SOL to lamports
+      if (lamports <= 0) throw new Error("Amount too small");
+
+      const data = Buffer.alloc(8);
+      data.writeBigUInt64LE(BigInt(lamports));
+
+      const instruction = new TransactionInstruction({
+        keys: [
+          { pubkey: publicKey, isSigner: true, isWritable: true },  // sender
+          { pubkey: recipient, isSigner: false, isWritable: true }, // recipient
+          { pubkey: programId, isSigner: false, isWritable: false } // program (not writable!)
+        ],
+        programId,
+        data,
+      });
+
+      const transaction = new Transaction().add(instruction);
       const signature = await sendTransaction(transaction, connection);
       await connection.confirmTransaction(signature, "processed");
-      alert("Donation Created and Transaction Signed!");
+
+      alert("Donation sent to contract!");
     } catch (error) {
-      console.error("Transaction failed", error);
-      alert("Transaction failed!");
+      console.error("Transaction failed:", error);
+      if (error instanceof Error) {
+        alert(`Transaction failed: ${error.message}`);
+      } else {
+        alert(`Transaction failed: ${String(error)}`);
+      }
     }
   };
 
@@ -92,9 +116,17 @@ const Donate: FC<DonateProps> = ({ onBack }) => {
 
       {mode === 'fill-donation' && selectedPartition !== null && (
         <>
-          <img src={partitions.find(p => p.id === selectedPartition)?.image} alt="Partition" style={{ width: '100%', borderRadius: '1rem' }} />
-          <h2 className={styles.formTitle}>{partitions.find(p => p.id === selectedPartition)?.title}</h2>
-          <p className={styles.subtitle}>{partitions.find(p => p.id === selectedPartition)?.description}</p>
+          <img
+            src={partitions.find((p) => p.id === selectedPartition)?.image}
+            alt="Partition"
+            style={{ width: "100%", borderRadius: "1rem" }}
+          />
+          <h2 className={styles.formTitle}>
+            {partitions.find((p) => p.id === selectedPartition)?.title}
+          </h2>
+          <p className={styles.subtitle}>
+            {partitions.find((p) => p.id === selectedPartition)?.description}
+          </p>
           <input
             className={styles.input}
             placeholder="SOL"
@@ -104,7 +136,7 @@ const Donate: FC<DonateProps> = ({ onBack }) => {
           <button className={styles.primaryButton} onClick={handleDonate}>
             Donate
           </button>
-          </>
+        </>
       )}
     </div>
   );
